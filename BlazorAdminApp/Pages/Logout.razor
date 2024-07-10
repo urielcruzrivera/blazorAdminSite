@@ -1,0 +1,11 @@
+﻿@page "/logout"
+@inject IAuthenticationService AuthenticationService
+
+@using BlazorAdminApp.Services
+
+@code {
+    protected override async void OnInitialized()
+    {
+        await AuthenticationService.Logout();
+    }
+}

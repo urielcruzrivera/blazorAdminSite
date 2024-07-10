@@ -1,0 +1,7 @@
+
+*.dat
+*.dll
+*.gz
+BlazorAdminApp/obj/Debug/net6.0
+BlazorAdminApp/bin/Debug/net6.0
+.vs/BlazorAdminApp/
