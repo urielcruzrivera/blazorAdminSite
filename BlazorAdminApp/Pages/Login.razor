@@ -8,15 +8,8 @@
 @using Microsoft.AspNetCore.Components.Routing
 
 <div class="col-md-6 offset-md-3 mt-5">
-    
-    <b>Last updated: </b>23-04-2024<br /><br />
-
-    <div class="alert alert-info">
-        Username: test<br />
-        Password: test
-    </div>
     <div class="card">
-        <h4 class="card-header">Blazor WebAssembly Basic Authentication</h4>
+        <h4 class="card-header text-center">S I A N</h4>
         <div class="card-body">
             <EditForm Model="@model" OnValidSubmit="HandleValidSubmit">
                 <DataAnnotationsValidator />
@@ -51,7 +44,6 @@
 
     protected override void OnInitialized()
     {
-        // redirect to home if already logged in
         if (AuthenticationService.User != null)
         {
             NavigationManager.NavigateTo("");
@@ -65,16 +57,11 @@
         {
             await AuthenticationService.Login(model.Username, model.Password);
             
-            // New code !!
             var returnUrl = NavigationManager.GetUriWithQueryParameter("returnUrl", false);        
             if( returnUrl == "returnUrl")
                 NavigationManager.NavigateTo(returnUrl);
             else
                 NavigationManager.NavigateTo("");
-                
-           // Old Code
-           // var returnUrl = NavigationManager.QueryString("returnUrl") ?? "";
-           // NavigationManager.NavigateTo(returnUrl);
         }
         catch (Exception ex)
         {

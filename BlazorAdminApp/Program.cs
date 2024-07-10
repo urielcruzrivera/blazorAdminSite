@@ -4,35 +4,30 @@ using BlazorAdminApp.Services;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using System.Runtime;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
+var appSettings = builder.Configuration.GetSection("AppServices").Get<AppServices>();
+builder.Services.AddSingleton(appSettings);
+
 builder.Services
            .AddScoped<IAuthenticationService, AuthenticationService>()
            .AddScoped<IUserService, UserService>()
            .AddScoped<IHttpService, HttpService>()
-           .AddScoped<ILocalStorageService, LocalStorageService>();
+           .AddScoped<ILocalStorageService, LocalStorageService>()
+           .AddScoped<IBitacoraService, BitacoraService>();
 
-// configure http client
 builder.Services.AddScoped(x =>
 {
-    //var apiUrl = new Uri(builder.Configuration["AppServices:BaseAdress"]);
-    var apiUrl = new Uri(builder.Configuration["apiUrl"]);
-
-    // use fake backend if "fakeBackend" is "true" in appsettings.json
-    if (builder.Configuration["fakeBackend"] == "true")
-        return new HttpClient(new FakeBackendHandler()) { BaseAddress = apiUrl };
-
+    var apiUrl = new Uri(builder.Configuration["AppServices:BaseAdress"]);    
     return new HttpClient() { BaseAddress = apiUrl };
 });
 
-//await builder.Build().RunAsync();
-//var authConf = new AppServices();
-//builder.Configuration.GetSection(nameof(AppServices)).Bind(authConf);
-
-//builder.Services.Configure<AppServices>(builder.Configuration.GetSection("AppServices"));
+var provider = builder.Services.BuildServiceProvider();
+var configuration = provider.GetService<IConfiguration>();
 
 var host = builder.Build();
 

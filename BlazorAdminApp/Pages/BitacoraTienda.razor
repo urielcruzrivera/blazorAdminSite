@@ -1,0 +1,144 @@
+﻿@page "/bitacora"
+
+@using BlazorAdminApp.Services
+@using BlazorAdminApp.Models
+@using Radzen
+@inject IBitacoraService bitacoraService
+@inject IJSRuntime JSRuntime
+
+<PageTitle>Bitácora Ventas</PageTitle>
+
+<RadzenText TextStyle="TextStyle.H5">Bitácora</RadzenText>
+
+<RadzenAlert AlertStyle="AlertStyle.Warning" Variant="Variant.Flat" Shade="Shade.Lighter" @ref="alert" @bind-Visible="isAlertVisible">
+    La fecha Inicio debe ser menor a la fecha Fin
+</RadzenAlert>
+
+<RadzenRow AlignItems="AlignItems.End" Wrap="FlexWrap.Wrap" Gap="1rem" Class="rz-p-sm-3">
+    <RadzenColumn Size="12" SizeMD="6" SizeLG="3">
+        <RadzenStack>
+            <RadzenStack>
+                <RadzenLabel Text="Fecha Inicio:" Component="DatePickerDateOnlyType" Style="margin-right: 8px; vertical-align: middle;" />
+                <RadzenDatePicker @bind-Value="@startDate" DateFormat="dd/MM/yyyy" Name="DatePickerDateOnlyType" DateRender=@DateRender CurrentDateChanged=@OnCurrentStartDateChanged />
+            </RadzenStack>
+        </RadzenStack>
+    </RadzenColumn>
+    <RadzenColumn Size="12" SizeMD="6" SizeLG="3">
+        <RadzenStack>
+            <RadzenStack>
+                <RadzenLabel Text="Fecha Fin:" Component="DatePickerDateOnlyType" Style="margin-right: 8px; vertical-align: middle;" />
+                <RadzenDatePicker @bind-Value="@endDate" DateFormat="dd/MM/yyyy" Name="DatePickerDateOnlyType" DateRender=@DateRender CurrentDateChanged=@OnCurrentEndDateChanged Min="@minEndDate" />
+            </RadzenStack>
+        </RadzenStack>
+    </RadzenColumn>
+</RadzenRow>
+
+@if (bitacora == null)
+{
+    <p><em>Cargando...</em></p>
+}
+else
+{
+    <div class="rz-p-2 rz-text-align-center">
+        <RadzenDataGrid AllowFiltering="true" AllowColumnResize="true" AllowAlternatingRows="false" FilterMode="FilterMode.Advanced" AllowSorting="true" PageSize="10" AllowPaging="true"
+                        PagerHorizontalAlign="HorizontalAlign.Left" ShowPagingSummary="true" Data="@bitacora" ColumnWidth="300px" LogicalFilterOperator="LogicalFilterOperator.Or"
+                        SelectionMode="DataGridSelectionMode.Single" @bind-Value=@selectedBitacora>
+            <Columns>
+                <RadzenDataGridColumn Property="@nameof(Bitacora.Fecha)" FormatString="{0:f}" Title="Fecha">
+                    <Template Context="data">
+                        <div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                            @data.Fecha
+                        </div>
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn Property="@nameof(Bitacora.Mensaje)" Title="Mensaje">
+                    <Template Context="data">
+                        <div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                            @data.Mensaje
+                        </div>
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn Property="@nameof(Bitacora.Equipo)" Title="Equipo" Width="160px" />
+                <RadzenDataGridColumn Property="@nameof(Bitacora.Usuario)" Title="Usuario" Width="160px" />
+            </Columns>
+        </RadzenDataGrid>
+    </div>
+}
+
+@code {
+    private DateOnly startDate = DateOnly.FromDateTime(DateTime.Now);
+    private DateOnly endDate = DateOnly.FromDateTime(DateTime.Now);
+    private DateTime minEndDate = DateTime.Now;
+    private Bitacora[] bitacora;
+    private IList<Bitacora>? selectedBitacora;
+    private RadzenAlert alert;
+    private bool isAlertVisible = false;
+    private System.Timers.Timer timer;
+
+    protected override async Task OnInitializedAsync()
+    {
+        bitacora = await bitacoraService.GetBitacoraVentas(startDate.ToString("dd/MM/yyyy"), endDate.ToString("dd/MM/yyyy"));
+        selectedBitacora = new List<Bitacora>() {
+            bitacora.FirstOrDefault() ?? new Bitacora() { }
+        };
+    }
+
+    void DateRender(DateRenderEventArgs args)
+    {
+        args.Disabled = args.Disabled || args.Date >= DateTime.Today.AddDays(1);
+    }
+
+    async void OnCurrentStartDateChanged(DateTime args)
+    {
+        startDate = DateOnly.FromDateTime(args);
+        minEndDate = args;
+
+        if (startDate <= endDate)
+            GetBitacora(startDate, endDate);
+        else
+        {
+            ShowAlert();
+            bitacora = new Bitacora[] { };
+        }
+    }
+
+    async void OnCurrentEndDateChanged(DateTime args)
+    {
+        endDate = DateOnly.FromDateTime(args);
+        if (startDate <= endDate)
+            GetBitacora(startDate, endDate);
+        //else
+        //aqui mostrar msj que no procede la busqueda por la fecha seleccionada
+    }
+
+    private async void GetBitacora(DateOnly _startDate, DateOnly _endDate)
+    {
+        bitacora = await bitacoraService.GetBitacoraVentas(_startDate.ToString("dd/MM/yyyy"), _endDate.ToString("dd/MM/yyyy"));
+        selectedBitacora = new List<Bitacora>() {
+            bitacora.FirstOrDefault() ?? new Bitacora() { }
+        };
+    }
+
+    private void ShowAlert()
+    {
+        isAlertVisible = true;
+        // Initialize and start the timer
+        timer = new System.Timers.Timer(3000); // 3000 ms = 3 seconds
+        timer.Elapsed += HideAlert;
+        timer.AutoReset = false; // Ensures the timer fires only once
+        timer.Start();
+    }
+
+    private void HideAlert(object source, System.Timers.ElapsedEventArgs e)
+    {
+        InvokeAsync(() =>
+        {
+            isAlertVisible = false;
+            timer.Dispose(); // Clean up the timer
+            StateHasChanged(); // Notify the component to re-render
+        });
+    }
+}
+
+
+

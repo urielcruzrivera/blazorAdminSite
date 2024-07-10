@@ -6,7 +6,7 @@ namespace BlazorAdminApp.Services
 {
     public interface IUserService
     {
-        Task<IEnumerable<User>> GetAll();
+        Task<IEnumerable<Usuario>> GetAll();
     }
 
     public class UserService : IUserService
@@ -18,9 +18,9 @@ namespace BlazorAdminApp.Services
             _httpService = httpService;
         }
 
-        public async Task<IEnumerable<User>> GetAll()
+        public async Task<IEnumerable<Usuario>> GetAll()
         {
-            return await _httpService.Get<IEnumerable<User>>("/users");
+            return await _httpService.GetAsync<IEnumerable<Usuario>>("/users");
         }
     }
 }

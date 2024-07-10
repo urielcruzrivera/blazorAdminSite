@@ -9,14 +9,15 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace BlazorAdminApp.Services
 {
     public interface IHttpService
     {
-        Task<T> Get<T>(string uri);
-        Task<T> Post<T>(string uri, object value);
+        Task<T> GetAsync<T>(string url);
+        Task<T> PostAsync<T>(string url, object data);
     }
 
     public class HttpService : IHttpService
@@ -38,13 +39,13 @@ namespace BlazorAdminApp.Services
             _configuration = configuration;
         }
 
-        public async Task<T> Get<T>(string uri)
+        public async Task<T> GetAsync<T>(string uri)
         {
             var request = new HttpRequestMessage(HttpMethod.Get, uri);
             return await sendRequest<T>(request);
         }
 
-        public async Task<T> Post<T>(string uri, object value)
+        public async Task<T> PostAsync<T>(string uri, object value)
         {
             var request = new HttpRequestMessage(HttpMethod.Post, uri);
             request.Content = new StringContent(JsonSerializer.Serialize(value), Encoding.UTF8, "application/json");
@@ -52,14 +53,13 @@ namespace BlazorAdminApp.Services
         }
 
         // helper methods
-
         private async Task<T> sendRequest<T>(HttpRequestMessage request)
         {
             // add basic auth header if user is logged in and request is to the api url
-            var user = await _localStorageService.GetItem<User>("user");
-            var isApiUrl = !request.RequestUri.IsAbsoluteUri;
-            if (user != null && isApiUrl)
-                request.Headers.Authorization = new AuthenticationHeaderValue("Basic", user.AuthData);
+            //var user = await _localStorageService.GetItem<Usuario>("user");
+            //var isApiUrl = !request.RequestUri.IsAbsoluteUri;
+            //if (user != null && isApiUrl)
+            //    request.Headers.Authorization = new AuthenticationHeaderValue("Basic", user.AuthData);
 
             using var response = await _httpClient.SendAsync(request);
 
