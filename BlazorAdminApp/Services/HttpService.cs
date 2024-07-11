@@ -1,16 +1,8 @@
-using BlazorAdminApp.Models;
 using Microsoft.AspNetCore.Components;
-using Microsoft.Extensions.Configuration;
-using System;
-using System.Collections.Generic;
 using System.Net;
-using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
-using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 
 namespace BlazorAdminApp.Services
 {
@@ -22,17 +14,14 @@ namespace BlazorAdminApp.Services
 
     public class HttpService : IHttpService
     {
-        private HttpClient _httpClient;
-        private NavigationManager _navigationManager;
-        private ILocalStorageService _localStorageService;
-        private IConfiguration _configuration;
+        private readonly HttpClient _httpClient;
+        private readonly NavigationManager _navigationManager;
+        private readonly ILocalStorageService _localStorageService;
+        private readonly IConfiguration _configuration;
 
-        public HttpService(
-            HttpClient httpClient,
-            NavigationManager navigationManager,
-            ILocalStorageService localStorageService,
-            IConfiguration configuration
-        ) {
+        public HttpService(HttpClient httpClient, NavigationManager navigationManager,
+            ILocalStorageService localStorageService, IConfiguration configuration)
+        {
             _httpClient = httpClient;
             _navigationManager = navigationManager;
             _localStorageService = localStorageService;

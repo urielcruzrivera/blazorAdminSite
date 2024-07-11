@@ -1,6 +1,5 @@
 using Microsoft.JSInterop;
 using System.Text.Json;
-using System.Threading.Tasks;
 
 namespace BlazorAdminApp.Services
 {
@@ -13,7 +12,7 @@ namespace BlazorAdminApp.Services
 
     public class LocalStorageService : ILocalStorageService
     {
-        private IJSRuntime _jsRuntime;
+        private readonly IJSRuntime _jsRuntime;
 
         public LocalStorageService(IJSRuntime jsRuntime)
         {

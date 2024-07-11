@@ -3,8 +3,6 @@ using BlazorAdminApp.Helpers;
 using BlazorAdminApp.Services;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using Microsoft.Extensions.DependencyInjection;
-using System.Runtime;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -15,7 +13,6 @@ builder.Services.AddSingleton(appSettings);
 
 builder.Services
            .AddScoped<IAuthenticationService, AuthenticationService>()
-           .AddScoped<IUserService, UserService>()
            .AddScoped<IHttpService, HttpService>()
            .AddScoped<ILocalStorageService, LocalStorageService>()
            .AddScoped<IBitacoraService, BitacoraService>();

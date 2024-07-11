@@ -1,9 +1,6 @@
 using BlazorAdminApp.Helpers;
 using BlazorAdminApp.Models;
 using Microsoft.AspNetCore.Components;
-using System.Net.Http;
-using System.Net.Http.Json;
-using System.Threading.Tasks;
 
 namespace BlazorAdminApp.Services
 {
@@ -17,19 +14,15 @@ namespace BlazorAdminApp.Services
 
     public class AuthenticationService : IAuthenticationService
     {
-        private IHttpService _httpService;
-        private NavigationManager _navigationManager;
-        private ILocalStorageService _localStorageService;
+        private readonly IHttpService _httpService;
+        private readonly NavigationManager _navigationManager;
+        private readonly ILocalStorageService _localStorageService;
         private readonly AppServices _appServices;
 
         public Usuario User { get; private set; }
 
-        public AuthenticationService(
-            IHttpService httpService,
-            NavigationManager navigationManager,
-            ILocalStorageService localStorageService,
-            AppServices appServices
-        )
+        public AuthenticationService(IHttpService httpService, NavigationManager navigationManager,
+            ILocalStorageService localStorageService, AppServices appServices)
         {
             _httpService = httpService;
             _navigationManager = navigationManager;
@@ -46,6 +39,12 @@ namespace BlazorAdminApp.Services
         {
             string urlRequest = _appServices.BaseAdress + string.Format(_appServices.GetLogin, username, password);
             User = await _httpService.GetAsync<Usuario>(urlRequest);
+
+            if (User.StatusCode == 401)
+                throw new Exception("Credenciales inválidas");
+            else if (User.StatusCode != 200)
+                throw new Exception("Se ha producido un error durante el proceso, consulte al administrador de sitio");
+
             User.LlaveSucursal = $"{User.LlaveSucursal}".EncodeBase64();
             await _localStorageService.SetItem("user", User);
         }
