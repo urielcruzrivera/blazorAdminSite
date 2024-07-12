@@ -42,22 +42,22 @@ else
                         PagerHorizontalAlign="HorizontalAlign.Left" ShowPagingSummary="true" Data="@bitacora" ColumnWidth="300px" LogicalFilterOperator="LogicalFilterOperator.Or"
                         SelectionMode="DataGridSelectionMode.Single" @bind-Value=@selectedBitacora>
             <Columns>
-                <RadzenDataGridColumn Property="@nameof(Bitacora.Fecha)" FormatString="{0:f}" Title="Fecha">
+                <RadzenDataGridColumn Property="@nameof(BitacoraResponse.Fecha)" FormatString="{0:f}" Title="Fecha">
                     <Template Context="data">
                         <div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                             @data.Fecha
                         </div>
                     </Template>
                 </RadzenDataGridColumn>
-                <RadzenDataGridColumn Property="@nameof(Bitacora.Mensaje)" Title="Mensaje">
+                <RadzenDataGridColumn Property="@nameof(BitacoraResponse.Mensaje)" Title="Mensaje">
                     <Template Context="data">
                         <div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                             @data.Mensaje
                         </div>
                     </Template>
                 </RadzenDataGridColumn>
-                <RadzenDataGridColumn Property="@nameof(Bitacora.Equipo)" Title="Equipo" Width="160px" />
-                <RadzenDataGridColumn Property="@nameof(Bitacora.Usuario)" Title="Usuario" Width="160px" />
+                <RadzenDataGridColumn Property="@nameof(BitacoraResponse.Equipo)" Title="Equipo" Width="160px" />
+                <RadzenDataGridColumn Property="@nameof(BitacoraResponse.Usuario)" Title="Usuario" Width="160px" />
             </Columns>
         </RadzenDataGrid>
     </div>
@@ -67,8 +67,8 @@ else
     private DateOnly startDate = DateOnly.FromDateTime(DateTime.Now);
     private DateOnly endDate = DateOnly.FromDateTime(DateTime.Now);
     private DateTime minEndDate = DateTime.Now;
-    private Bitacora[] bitacora;
-    private IList<Bitacora>? selectedBitacora;
+    private BitacoraResponse[] bitacora;
+    private IList<BitacoraResponse>? selectedBitacora;
     private RadzenAlert alert;
     private bool isAlertVisible = false;
     private System.Timers.Timer timer;
@@ -76,8 +76,8 @@ else
     protected override async Task OnInitializedAsync()
     {
         bitacora = await bitacoraService.GetBitacoraVentas(startDate.ToString("dd/MM/yyyy"), endDate.ToString("dd/MM/yyyy"));
-        selectedBitacora = new List<Bitacora>() {
-            bitacora.FirstOrDefault() ?? new Bitacora() { }
+        selectedBitacora = new List<BitacoraResponse>() {
+            bitacora.FirstOrDefault() ?? new BitacoraResponse() { }
         };
     }
 
@@ -96,7 +96,7 @@ else
         else
         {
             ShowAlert();
-            bitacora = new Bitacora[] { };
+            bitacora = new BitacoraResponse[] { };
         }
     }
 
@@ -112,8 +112,8 @@ else
     private async void GetBitacora(DateOnly _startDate, DateOnly _endDate)
     {
         bitacora = await bitacoraService.GetBitacoraVentas(_startDate.ToString("dd/MM/yyyy"), _endDate.ToString("dd/MM/yyyy"));
-        selectedBitacora = new List<Bitacora>() {
-            bitacora.FirstOrDefault() ?? new Bitacora() { }
+        selectedBitacora = new List<BitacoraResponse>() {
+            bitacora.FirstOrDefault() ?? new BitacoraResponse() { }
         };
     }
 

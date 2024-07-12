@@ -1,6 +1,13 @@
 ﻿namespace BlazorAdminApp.Models
 {
-    public class Bitacora
+    public class BitacoraRequest
+    {
+        public string LlaveSucursal { get; set; }
+        public string FechaInicio { get; set; }
+        public string FechaFin { get; set; }
+    }
+
+    public class BitacoraResponse
     {
         public Guid Id { get; set; }
         public string Metodo { get; set; }

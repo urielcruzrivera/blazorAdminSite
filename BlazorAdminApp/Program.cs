@@ -15,7 +15,8 @@ builder.Services
            .AddScoped<IAuthenticationService, AuthenticationService>()
            .AddScoped<IHttpService, HttpService>()
            .AddScoped<ILocalStorageService, LocalStorageService>()
-           .AddScoped<IBitacoraService, BitacoraService>();
+           .AddScoped<IBitacoraService, BitacoraService>()
+           .AddScoped<ICorteCajaService, CorteCajaService>();
 
 builder.Services.AddScoped(x =>
 {
