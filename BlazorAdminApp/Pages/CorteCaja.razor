@@ -2,7 +2,10 @@
 
 @using BlazorAdminApp.Services
 @using BlazorAdminApp.Models
+@using System.Globalization
 @inject IBitacoraService bitacoraService
+@inject IUsuarioService usuarioService
+@inject ICajaService cajaService
 
 <PageTitle>Corte Caja</PageTitle>
 
@@ -16,16 +19,18 @@
     <RadzenColumn Size="12" SizeMD="6" SizeLG="3">
         <RadzenStack>
             <RadzenStack>
-                <RadzenLabel Text="Fecha Inicio:" Component="DatePickerDateOnlyType" Style="margin-right: 8px; vertical-align: middle;" />
-                <RadzenDatePicker @bind-Value="@startDate" DateFormat="dd/MM/yyyy" Name="DatePickerDateOnlyType" DateRender=@DateRender CurrentDateChanged=@OnCurrentStartDateChanged />
+                <RadzenLabel Text="Fecha Inicio:" Component="dtpFechaInicio" Style="margin-right: 8px; vertical-align: middle;" />
+                <RadzenDatePicker @bind-Value=@startDate ShowTime="true" ShowSeconds="false" HoursStep="1" MinutesStep="5" DateFormat="dd/MM/yyyy HH:mm"
+                                  Name="dtpFechaInicio" DateRender=@DateRender CurrentDateChanged=@OnCurrentStartDateChanged />
             </RadzenStack>
         </RadzenStack>
     </RadzenColumn>
     <RadzenColumn Size="12" SizeMD="6" SizeLG="3">
         <RadzenStack>
             <RadzenStack>
-                <RadzenLabel Text="Fecha Fin:" Component="DatePickerDateOnlyType" Style="margin-right: 8px; vertical-align: middle;" />
-                <RadzenDatePicker @bind-Value="@endDate" DateFormat="dd/MM/yyyy" Name="DatePickerDateOnlyType" DateRender=@DateRender CurrentDateChanged=@OnCurrentEndDateChanged Min="@minEndDate" />
+                <RadzenLabel Text="Fecha Fin:" Component="dtpFechaFin" Style="margin-right: 8px; vertical-align: middle;" />
+                <RadzenDatePicker @bind-Value=@endDate ShowTime="true" ShowSeconds="false" HoursStep="1" MinutesStep="5" DateFormat="dd/MM/yyyy HH:mm"
+                                  Name="dtpFechaFin" DateRender=@DateRender CurrentDateChanged=@OnCurrentEndDateChanged Min="@minEndDate" />
             </RadzenStack>
         </RadzenStack>
     </RadzenColumn>
@@ -33,7 +38,7 @@
         <RadzenStack>
             <RadzenStack>
                 <RadzenLabel Text="Caja (Computadora):" Component="DropDownTextValueProperties" Style="margin-right: 8px; vertical-align: middle;" />
-                <RadzenDropDown @bind-Value=@cajaSeleccionada Data=@cajas TextProperty="@nameof(Caja.CajaNombre)" ValueProperty="@nameof(Caja.CajaID)" Style="width: 100%;" Name="DropDownTextValueProperties" />
+                <RadzenDropDown @bind-Value=@cajaSeleccionada Data=@cajas TextProperty="@nameof(CajaResponse.CajaNombre)" ValueProperty="@nameof(CajaResponse.CajaID)" Style="width: 100%;" Name="DropDownTextValueProperties" />
             </RadzenStack>
         </RadzenStack>
     </RadzenColumn>
@@ -41,7 +46,7 @@
         <RadzenStack>
             <RadzenStack>
                 <RadzenLabel Text="Usuario:" Component="DropDownTextValueProperties" Style="margin-right: 8px; vertical-align: middle;" />
-                <RadzenDropDown @bind-Value=@usuarioSeleccionado Data=@usuarios TextProperty="@nameof(Usuario.UsuarioNombre)" ValueProperty="@nameof(Usuario.UsuarioID)" Style="width: 100%;" Name="DropDownTextValueProperties" />
+                <RadzenDropDown @bind-Value=@usuarioSeleccionado Data=@usuarios TextProperty="@nameof(UsuarioResponse.UsuarioNombre)" ValueProperty="@nameof(UsuarioResponse.UsuarioID)" Style="width: 100%;" Name="DropDownTextValueProperties" />
             </RadzenStack>
         </RadzenStack>
     </RadzenColumn>
@@ -53,11 +58,11 @@
             <RadzenFieldset Text="Montos">
                 <RadzenStack Gap="1rem">
                     <RadzenRow AlignItems="AlignItems.Center">
-                        <RadzenColumn Size="12" SizeMD="4">
+                        <RadzenColumn Size="12" SizeMD="3">
                             <RadzenLabel Text="Total efectivo" Component="Name" />
                         </RadzenColumn>
-                        <RadzenColumn Size="12" SizeMD="4">
-                            <RadzenTextBox Style="width: 100%;" Name="Name" Disabled="true" Placeholder="$0" />
+                        <RadzenColumn Size="12" SizeMD="5">
+                            <RadzenTextBox Style="width: 100%;color: black;font-weight: bold;" Name="Name" Disabled="true" Value=@totalEfectivoFormateado />
                         </RadzenColumn>
                         <RadzenColumn Size="12" SizeMD="4">
                             <RadzenButton Shade="Shade.Dark" Icon="add_location" Text="Cierre" ButtonStyle="ButtonStyle.Success" />
@@ -65,14 +70,14 @@
                     </RadzenRow>
                     <RadzenTabs SelectedIndex="0">
                         <Tabs>
-                            <RadzenTabsItem Text="Total billetes: $0">
+                            <RadzenTabsItem Text="@($"Total billetes: $ {totalBilletes}")">
                                 <RadzenStack>
                                     <RadzenRow AlignItems="AlignItems.Center">
                                         <RadzenColumn Size="12" SizeMD="4">
                                             <RadzenLabel Text="$500" Component="City" />
                                         </RadzenColumn>
                                         <RadzenColumn Size="12" SizeMD="8">
-                                            <RadzenNumeric Style="width: 100%;" Min="0" @bind-Value=@value InputAttributes="@(new Dictionary<string,object>(){ { "aria-label", "enter value" }})" />
+                                            <RadzenNumeric TValue="int" Style="width: 100%;" Min="0" @bind-Value=@totalBilletesQuinientos Change="@OnChange" InputAttributes="@(new Dictionary<string,object>(){ { "aria-label", "Ingrese cantidad de billetes de $500" }})" />
                                         </RadzenColumn>
                                     </RadzenRow>
                                     <RadzenRow AlignItems="AlignItems.Center">
@@ -80,7 +85,7 @@
                                             <RadzenLabel Text="$200" Component="City" />
                                         </RadzenColumn>
                                         <RadzenColumn Size="12" SizeMD="8">
-                                            <RadzenNumeric Style="width: 100%;" Min="0" @bind-Value=@value InputAttributes="@(new Dictionary<string,object>(){ { "aria-label", "enter value" }})" />
+                                            <RadzenNumeric TValue="int" Style="width: 100%;" Min="0" @bind-Value=@totalBilletesDoscientos Change="@OnChange" InputAttributes="@(new Dictionary<string,object>(){ { "aria-label", "Ingrese cantidad de billetes de $200" }})" />
                                         </RadzenColumn>
                                     </RadzenRow>
                                     <RadzenRow AlignItems="AlignItems.Center">
@@ -88,7 +93,7 @@
                                             <RadzenLabel Text="$100" Component="City" />
                                         </RadzenColumn>
                                         <RadzenColumn Size="12" SizeMD="8">
-                                            <RadzenNumeric Style="width: 100%;" Min="0" @bind-Value=@value InputAttributes="@(new Dictionary<string,object>(){ { "aria-label", "enter value" }})" />
+                                            <RadzenNumeric TValue="int" Style="width: 100%;" Min="0" @bind-Value=@totalBilletesCien Change="@OnChange" InputAttributes="@(new Dictionary<string,object>(){ { "aria-label", "Ingrese cantidad de billetes de $100" }})" />
                                         </RadzenColumn>
                                     </RadzenRow>
                                     <RadzenRow AlignItems="AlignItems.Center">
@@ -96,7 +101,7 @@
                                             <RadzenLabel Text="$50" Component="City" />
                                         </RadzenColumn>
                                         <RadzenColumn Size="12" SizeMD="8">
-                                            <RadzenNumeric Style="width: 100%;" Min="0" @bind-Value=@value InputAttributes="@(new Dictionary<string,object>(){ { "aria-label", "enter value" }})" />
+                                            <RadzenNumeric TValue="int" Style="width: 100%;" Min="0" @bind-Value=@totalBilletesCincuenta Change="@OnChange" InputAttributes="@(new Dictionary<string,object>(){ { "aria-label", "Ingrese cantidad de billetes de $50" }})" />
                                         </RadzenColumn>
                                     </RadzenRow>
                                     <RadzenRow AlignItems="AlignItems.Center">
@@ -104,19 +109,19 @@
                                             <RadzenLabel Text="$20" Component="City" />
                                         </RadzenColumn>
                                         <RadzenColumn Size="12" SizeMD="8">
-                                            <RadzenNumeric Style="width: 100%;" Min="0" @bind-Value=@value InputAttributes="@(new Dictionary<string,object>(){ { "aria-label", "enter value" }})" />
+                                            <RadzenNumeric TValue="int" Style="width: 100%;" Min="0" @bind-Value=@totalBilletesVeinte Change="@OnChange" InputAttributes="@(new Dictionary<string,object>(){ { "aria-label", "Ingrese cantidad de billetes de $20" }})" />
                                         </RadzenColumn>
                                     </RadzenRow>
                                 </RadzenStack>
                             </RadzenTabsItem>
-                            <RadzenTabsItem Text="Total monedas: $0">
+                            <RadzenTabsItem Text="@($"Total monedas: $ {totalMonedas}")">
                                 <RadzenStack>
                                     <RadzenRow AlignItems="AlignItems.Center">
                                         <RadzenColumn Size="12" SizeMD="4">
                                             <RadzenLabel Text="$20" Component="City" />
                                         </RadzenColumn>
                                         <RadzenColumn Size="12" SizeMD="8">
-                                            <RadzenNumeric Style="width: 100%;" Min="0" @bind-Value=@value InputAttributes="@(new Dictionary<string,object>(){ { "aria-label", "enter value" }})" />
+                                            <RadzenNumeric TValue="int" Style="width: 100%;" Min="0" @bind-Value=@totalMonedasVeinte Change="@OnChange" InputAttributes="@(new Dictionary<string,object>(){ { "aria-label", "Ingrese cantidad de monedas de $20" }})" />
                                         </RadzenColumn>
                                     </RadzenRow>
                                     <RadzenRow AlignItems="AlignItems.Center">
@@ -124,7 +129,7 @@
                                             <RadzenLabel Text="$10" Component="City" />
                                         </RadzenColumn>
                                         <RadzenColumn Size="12" SizeMD="8">
-                                            <RadzenNumeric Style="width: 100%;" Min="0" @bind-Value=@value InputAttributes="@(new Dictionary<string,object>(){ { "aria-label", "enter value" }})" />
+                                            <RadzenNumeric TValue="int" Style="width: 100%;" Min="0" @bind-Value=@totalMonedasDiez Change="@OnChange" InputAttributes="@(new Dictionary<string,object>(){ { "aria-label", "Ingrese cantidad de monedas de $10" }})" />
                                         </RadzenColumn>
                                     </RadzenRow>
                                     <RadzenRow AlignItems="AlignItems.Center">
@@ -132,7 +137,7 @@
                                             <RadzenLabel Text="$5" Component="City" />
                                         </RadzenColumn>
                                         <RadzenColumn Size="12" SizeMD="8">
-                                            <RadzenNumeric Style="width: 100%;" Min="0" @bind-Value=@value InputAttributes="@(new Dictionary<string,object>(){ { "aria-label", "enter value" }})" />
+                                            <RadzenNumeric TValue="int" Style="width: 100%;" Min="0" @bind-Value=@totalMonedasCinco Change="@OnChange" InputAttributes="@(new Dictionary<string,object>(){ { "aria-label", "Ingrese cantidad de monedas de $5" }})" />
                                         </RadzenColumn>
                                     </RadzenRow>
                                     <RadzenRow AlignItems="AlignItems.Center">
@@ -140,7 +145,7 @@
                                             <RadzenLabel Text="$2" Component="City" />
                                         </RadzenColumn>
                                         <RadzenColumn Size="12" SizeMD="8">
-                                            <RadzenNumeric Style="width: 100%;" Min="0" @bind-Value=@value InputAttributes="@(new Dictionary<string,object>(){ { "aria-label", "enter value" }})" />
+                                            <RadzenNumeric TValue="int" Style="width: 100%;" Min="0" @bind-Value=@totalMonedasDos Change="@OnChange" InputAttributes="@(new Dictionary<string,object>(){ { "aria-label", "Ingrese cantidad de monedas de $2" }})" />
                                         </RadzenColumn>
                                     </RadzenRow>
                                     <RadzenRow AlignItems="AlignItems.Center">
@@ -148,7 +153,7 @@
                                             <RadzenLabel Text="$1" Component="City" />
                                         </RadzenColumn>
                                         <RadzenColumn Size="12" SizeMD="8">
-                                            <RadzenNumeric Style="width: 100%;" Min="0" @bind-Value=@value InputAttributes="@(new Dictionary<string,object>(){ { "aria-label", "enter value" }})" />
+                                            <RadzenNumeric TValue="int" Style="width: 100%;" Min="0" @bind-Value=@totalMonedasPeso Change="@OnChange" InputAttributes="@(new Dictionary<string,object>(){ { "aria-label", "Ingrese cantidad de monedas de $1" }})" />
                                         </RadzenColumn>
                                     </RadzenRow>
                                     <RadzenRow AlignItems="AlignItems.Center">
@@ -156,7 +161,7 @@
                                             <RadzenLabel Text="$0.50" Component="City" />
                                         </RadzenColumn>
                                         <RadzenColumn Size="12" SizeMD="8">
-                                            <RadzenNumeric Style="width: 100%;" Min="0" @bind-Value=@value InputAttributes="@(new Dictionary<string,object>(){ { "aria-label", "enter value" }})" />
+                                            <RadzenNumeric TValue="int" Style="width: 100%;" Min="0" @bind-Value=@totalMonedasCincuentaCent Change="@OnChange" InputAttributes="@(new Dictionary<string,object>(){ { "aria-label", "Ingrese cantidad de monedas de $0.50" }})" />
                                         </RadzenColumn>
                                     </RadzenRow>
                                 </RadzenStack>
@@ -172,31 +177,31 @@
             <RadzenFieldset Text="Resumen Caja">
                 <RadzenStack Gap="1rem">
                     <RadzenRow AlignItems="AlignItems.Center">
-                        <RadzenColumn Size="12" SizeMD="3">
+                        <RadzenColumn Size="12" SizeMD="2">
                             <RadzenLabel Text="Compras" Component="Region" />
                         </RadzenColumn>
-                        <RadzenColumn Size="12" SizeMD="3">
-                            <RadzenTextBox Disabled="true" Placeholder="$4,548.62" Style="width: 100%;" Name="Region" />
+                        <RadzenColumn Size="12" SizeMD="4">
+                            <RadzenTextBox Style="width: 100%;color: black;font-weight: bold;" Name="Region" Disabled="true" Value="$4,548.62" />
                         </RadzenColumn>
-                        <RadzenColumn Size="12" SizeMD="3" Class="rz-text-align-md-end">
+                        <RadzenColumn Size="12" SizeMD="2" Class="rz-text-align-md-end">
                             <RadzenLabel Text="Ventas" Component="System" />
                         </RadzenColumn>
-                        <RadzenColumn Size="12" SizeMD="3">
-                            <RadzenTextBox Disabled="true" Placeholder="$4,548.62" Style="width: 100%;" Name="System" />
+                        <RadzenColumn Size="12" SizeMD="4">
+                            <RadzenTextBox Style="width: 100%;color: black;font-weight: bold;" Name="System" Disabled="true" Value="$4,548.62" />
                         </RadzenColumn>
                     </RadzenRow>
                     <RadzenRow AlignItems="AlignItems.Center">
-                        <RadzenColumn Size="12" SizeMD="3">
+                        <RadzenColumn Size="12" SizeMD="2">
                             <RadzenLabel Text="Depositos" Component="Region" />
                         </RadzenColumn>
-                        <RadzenColumn Size="12" SizeMD="3">
-                            <RadzenTextBox Disabled="true" Placeholder="$4,548.62" Style="width: 100%;" Name="Region" />
+                        <RadzenColumn Size="12" SizeMD="4">
+                            <RadzenTextBox Style="width: 100%;color: black;font-weight: bold;" Name="Region" Disabled="true" Value="$4,548.62" />
                         </RadzenColumn>
-                        <RadzenColumn Size="12" SizeMD="3" Class="rz-text-align-md-end">
+                        <RadzenColumn Size="12" SizeMD="2" Class="rz-text-align-md-end">
                             <RadzenLabel Text="Pago Tarjeta" Component="System" />
                         </RadzenColumn>
-                        <RadzenColumn Size="12" SizeMD="3">
-                            <RadzenTextBox Disabled="true" Placeholder="$4,548.62" Style="width: 100%;" Name="System" />
+                        <RadzenColumn Size="12" SizeMD="4">
+                            <RadzenTextBox Style="width: 100%;color: black;font-weight: bold;" Name="System" Disabled="true" Value="$4,548.62" />
                         </RadzenColumn>
                     </RadzenRow>
                 </RadzenStack>
@@ -214,57 +219,43 @@ else
 }
 
 @code {
-    private DateOnly startDate = DateOnly.FromDateTime(DateTime.Now);
-    private DateOnly endDate = DateOnly.FromDateTime(DateTime.Now);
+    private DateTime startDate = DateTime.Now;
+    private DateTime endDate = DateTime.Now.AddHours(1);
     private DateTime minEndDate = DateTime.Now;
     private BitacoraResponse[] bitacora;
     private IList<BitacoraResponse>? selectedBitacora;
     private RadzenAlert alert;
     private bool isAlertVisible = false;
     private System.Timers.Timer timer;
+    //start:a partir de aquí es el código del sitio en desarrollo
+    string cajaSeleccionada = "";
+    string usuarioSeleccionado = "";
+    IEnumerable<CajaResponse> cajas;
+    IEnumerable<UsuarioResponse> usuarios;
+    string totalEfectivoFormateado = string.Empty;
+    double totalEfectivo = 0;
+    int totalBilletes = 0;
+    int totalBilletesQuinientos = 0;
+    int totalBilletesDoscientos = 0;
+    int totalBilletesCien = 0;
+    int totalBilletesCincuenta = 0;
+    int totalBilletesVeinte = 0;
+    double totalMonedas = 0;
+    int totalMonedasVeinte = 0;
+    int totalMonedasDiez = 0;
+    int totalMonedasCinco = 0;
+    int totalMonedasDos = 0;
+    int totalMonedasPeso = 0;
+    int totalMonedasCincuentaCent = 0;
+    //end:a partir de aquí es el código del sitio en desarrollo
 
     protected override async Task OnInitializedAsync()
     {
         //start: codigo de prueba
-        cajas = new List<Caja>(){
-            new Caja(){
-                CajaID = "AROUT",
-                CajaNombre = "Laptop 1"
-            },
-            new Caja(){
-                CajaID = "AROUY",
-                CajaNombre = "Laptop 2"
-            },
-            new Caja(){
-                CajaID = "AROUU",
-                CajaNombre = "Laptop 3"
-            },
-            new Caja(){
-                CajaID = "AROUI",
-                CajaNombre = "Laptop 4"
-            }
-        };
-
-        usuarios = new List<Usuario>(){
-            new Usuario(){
-                UsuarioID = "AROUD",
-                UsuarioNombre = "SISTEMAS OPERADOR"
-            },
-            new Usuario(){
-                UsuarioID = "AROUF",
-                UsuarioNombre = "Luis"
-            },
-             new Usuario(){
-                UsuarioID = "AROUG",
-                UsuarioNombre = "Pedro"
-            },
-            new Usuario(){
-                UsuarioID = "AROUH",
-                UsuarioNombre = "Jorge"
-            }
-        };
+        cajas = await cajaService.GetCajas();
+        usuarios = await usuarioService.GetUsuarios();
+        calcularTotalEfectivo();
         //end: codigo de prueba
-
         bitacora = await bitacoraService.GetBitacoraVentas(startDate.ToString("dd/MM/yyyy"), endDate.ToString("dd/MM/yyyy"));
         selectedBitacora = new List<BitacoraResponse>() {
             bitacora.FirstOrDefault() ?? new BitacoraResponse() { }
@@ -278,7 +269,7 @@ else
 
     async void OnCurrentStartDateChanged(DateTime args)
     {
-        startDate = DateOnly.FromDateTime(args);
+        startDate = args;
         minEndDate = args;
 
         if (startDate <= endDate)
@@ -292,14 +283,14 @@ else
 
     async void OnCurrentEndDateChanged(DateTime args)
     {
-        endDate = DateOnly.FromDateTime(args);
+        endDate = args;
         if (startDate <= endDate)
             GetBitacora(startDate, endDate);
         //else
         //aqui mostrar msj que no procede la busqueda por la fecha seleccionada
     }
 
-    private async void GetBitacora(DateOnly _startDate, DateOnly _endDate)
+    private async void GetBitacora(DateTime _startDate, DateTime _endDate)
     {
         bitacora = await bitacoraService.GetBitacoraVentas(_startDate.ToString("dd/MM/yyyy"), _endDate.ToString("dd/MM/yyyy"));
         selectedBitacora = new List<BitacoraResponse>() {
@@ -327,26 +318,50 @@ else
         });
     }
 
-    //start:a partir de aquí es el código del sitio en desarrollo
-    string cajaSeleccionada = "";
-    IEnumerable<Caja> cajas;
-    private class Caja
+    // void OnChange(int cantidadEfectivo, string controlEvento)
+    // {
+    //     calcularTotalEfectivo();
+    // }
+
+    void OnChange()
     {
-        public string CajaID { get; set; }
-        public string CajaNombre { get; set; }
+        calcularTotalEfectivo();
     }
 
-    string usuarioSeleccionado = "";
-    IEnumerable<Usuario> usuarios;
-    private class Usuario
+    private void calcularTotalEfectivo()
     {
-        public string UsuarioID { get; set; }
-        public string UsuarioNombre { get; set; }
+        totalEfectivo = 0;
+        totalBilletes = 0;
+        totalMonedas = 0;
+
+        if (totalBilletesQuinientos > 0)
+            totalBilletes += (totalBilletesQuinientos * 500);
+        if (totalBilletesDoscientos > 0)
+            totalBilletes += (totalBilletesDoscientos * 200);
+        if (totalBilletesCien > 0)
+            totalBilletes += (totalBilletesCien * 100);
+        if (totalBilletesCincuenta > 0)
+            totalBilletes += (totalBilletesCincuenta * 50);
+        if (totalBilletesVeinte > 0)
+            totalBilletes += (totalBilletesVeinte * 20);
+
+        if (totalMonedasVeinte > 0)
+            totalMonedas += (totalMonedasVeinte * 20);
+        if (totalMonedasDiez > 0)
+            totalMonedas += (totalMonedasDiez * 10);
+        if (totalMonedasCinco > 0)
+            totalMonedas += (totalMonedasCinco * 5);
+        if (totalMonedasDos > 0)
+            totalMonedas += (totalMonedasDos * 2);
+        if (totalMonedasPeso > 0)
+            totalMonedas += (totalMonedasPeso * 1);
+        if (totalMonedasCincuentaCent > 0)
+            totalMonedas += (totalMonedasCincuentaCent * 0.50);
+
+        totalEfectivo = totalBilletes + totalMonedas;
+        CultureInfo formatoMX = new CultureInfo("es-MX");
+        totalEfectivoFormateado = totalEfectivo.ToString("C", formatoMX);
     }
-
-
-    int value;
-    //end:a partir de aquí es el código del sitio en desarrollo
 }
 
 

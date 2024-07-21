@@ -24,7 +24,7 @@ namespace BlazorAdminApp.Services
         public async Task<BitacoraResponse[]> GetBitacoraVentas(string fechaInicio, string fechaFin)
         {
             string urlRequest = _appServices.BaseAdress + _appServices.PostBitacora;
-            var user = await _localStorageService.GetItem<Usuario>("user");
+            var user = await _localStorageService.GetItem<UsuarioSessionResponse>("user");
             BitacoraRequest request = new()
             {
                 LlaveSucursal = user.LlaveSucursal.DecodeBase64(),

@@ -6,7 +6,7 @@ namespace BlazorAdminApp.Services
 {
     public interface IAuthenticationService
     {
-        Usuario User { get; }
+        UsuarioSessionResponse usuarioSession { get; }
         Task Initialize();
         Task Login(string username, string password);
         Task Logout();
@@ -19,7 +19,7 @@ namespace BlazorAdminApp.Services
         private readonly ILocalStorageService _localStorageService;
         private readonly AppServices _appServices;
 
-        public Usuario User { get; private set; }
+        public UsuarioSessionResponse usuarioSession { get; private set; }
 
         public AuthenticationService(IHttpService httpService, NavigationManager navigationManager,
             ILocalStorageService localStorageService, AppServices appServices)
@@ -32,26 +32,26 @@ namespace BlazorAdminApp.Services
 
         public async Task Initialize()
         {
-            User = await _localStorageService.GetItem<Usuario>("user");
+            usuarioSession = await _localStorageService.GetItem<UsuarioSessionResponse>("user");
         }
 
         public async Task Login(string username, string password)
         {
             string urlRequest = _appServices.BaseAdress + string.Format(_appServices.GetLogin, username, password);
-            User = await _httpService.GetAsync<Usuario>(urlRequest);
+            usuarioSession = await _httpService.GetAsync<UsuarioSessionResponse>(urlRequest);
 
-            if (User.StatusCode == 401)
+            if (usuarioSession.StatusCode == 401)
                 throw new Exception("Credenciales inválidas");
-            else if (User.StatusCode != 200)
+            else if (usuarioSession.StatusCode != 200)
                 throw new Exception("Se ha producido un error durante el proceso, consulte al administrador de sitio");
 
-            User.LlaveSucursal = $"{User.LlaveSucursal}".EncodeBase64();
-            await _localStorageService.SetItem("user", User);
+            usuarioSession.LlaveSucursal = $"{usuarioSession.LlaveSucursal}".EncodeBase64();
+            await _localStorageService.SetItem("user", usuarioSession);
         }
 
         public async Task Logout()
         {
-            User = null;
+            usuarioSession = null;
             await _localStorageService.RemoveItem("user");
             _navigationManager.NavigateTo("login");
         }

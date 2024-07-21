@@ -7,11 +7,11 @@
 @using BlazorAdminApp.Services
 @using Microsoft.AspNetCore.Authorization
 
- @if (AuthenticationService.User != null)
+ @if (AuthenticationService.usuarioSession != null)
 {
     <div class="card mt-4">
         <h5 class="card-header">
-            Bienvenido: @AuthenticationService.User.Nombre
+            Bienvenido: @AuthenticationService.usuarioSession.Nombre
         </h5>
     </div>
 }

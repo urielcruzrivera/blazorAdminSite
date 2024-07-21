@@ -23,7 +23,7 @@ namespace BlazorAdminApp.Services
 
         public async Task<CorteCajaResponse> GetCorteCaja(CorteCajaRequest corteCajaRequest)
         {
-            Usuario user = await _localStorageService.GetItem<Usuario>("user");
+            UsuarioSessionResponse user = await _localStorageService.GetItem<UsuarioSessionResponse>("user");
             corteCajaRequest.ClaveSucursal = user.LlaveSucursal.DecodeBase64();
             string urlRequest = _appServices.BaseAdress + string.Format(_appServices.GetCorteCaja, corteCajaRequest.EquipoId, corteCajaRequest.FechaDesde,
                 corteCajaRequest.FechaHasta, corteCajaRequest.UsuarioId, corteCajaRequest.ClaveSucursal);

@@ -42,7 +42,7 @@
 
     protected override void OnInitialized()
     {
-        if (AuthenticationService.User != null)
+        if (AuthenticationService.usuarioSession != null)
         {
             NavigationManager.NavigateTo("");
         }
